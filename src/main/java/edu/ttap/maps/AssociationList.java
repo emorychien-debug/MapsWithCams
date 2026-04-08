@@ -144,8 +144,9 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
-        // TODO: implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'putAll'");
+        for (Entry<? extends K, ? extends V> i : m.entrySet()) {
+            this.put(i.getKey(), i.getValue());
+        }
     }
 
     /**
@@ -156,8 +157,14 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public V remove(Object key) {
-        // TODO: Implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+        for(int i = 0; i < data.size(); i++) {
+            if(data.get(i).getKey().equals(key)){
+                V old = data.get(i).getValue();
+                data.remove(i);
+                return old;
+            }
+        }
+        return null;
     }
 
     /**
@@ -165,8 +172,7 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public int size() {
-        // TODO: Implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'size'");
+        return data.size();
     }
 
     /**
@@ -174,7 +180,10 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public Collection<V> values() {
-        // TODO: Implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'values'");
-    }
+        Collection <V> list = new ArrayList <> ();
+        for (Node <K, V> i : data){
+            list.add(i.getValue());
+        }
+        return list;
+        }
 }

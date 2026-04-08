@@ -1,12 +1,18 @@
 package edu.ttap.maps;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * A substitution cipher is a simple encryption scheme that associates each
  * letter of the alphabet with a different letter.
  */
 public class SubstitutionCipher {
+
+  
     /**
      * Creates a substitution cipher by reading a mapping of characters from the given
      * file. Each mapping of the file should be of the form "a b", where 'a' is mapped to
@@ -15,8 +21,21 @@ public class SubstitutionCipher {
      * @return the cipher as a mapping between characters
      */
     public static Map<Character, Character> createCipher(String filename) {
-        // TODO: implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'createCipher'");
+        Map<Character, Character> cipherMap = new AssociationList<>();
+        File cipherSource = new File(filename);
+
+        try (Scanner cipherReader = new Scanner(cipherSource)) {
+            while (cipherReader.hasNextLine()) {
+                String mapping = cipherReader.nextLine();
+                if (mapping.length() != 4){
+                    System.err.println ("Cannot load cipher");
+                }
+                cipherMap.put(mapping.charAt(0), mapping.charAt(2));
+            }
+        } catch (FileNotFoundException b) {
+            System.err.println ("File not found");
+        }
+        return cipherMap;
     }
 
     /**

@@ -30,7 +30,7 @@ public class SubstitutionCipher {
                 if (mapping.length() != 4){
                     System.err.println ("Cannot load cipher");
                 }
-                cipherMap.put(mapping.charAt(0), mapping.charAt(2));
+                cipherMap.put (mapping.charAt(0), mapping.charAt(2));
             }
         } catch (FileNotFoundException b) {
             System.err.println ("File not found");
@@ -47,7 +47,13 @@ public class SubstitutionCipher {
      * @return true iff the given mapping is a valid substitution cipher
      */
     public static boolean isValidCipher(Map<Character, Character> cipher) {
-        // TODO: implement me!
+        if (cipher.size() != 26) {
+            return false;
+        }
+        boolean[] check = new boolean[26];
+        for (int i = 0; i < 26; i++) {
+            cipher.hasKey();
+        }
         throw new UnsupportedOperationException("Unimplemented method 'isValidCipher'");
     }
 

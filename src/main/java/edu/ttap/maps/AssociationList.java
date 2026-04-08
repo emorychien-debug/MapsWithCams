@@ -10,7 +10,7 @@ import java.util.TreeSet;
  * An association list is an implementation of a map via a list of key-value pairs.
  */
 public class AssociationList<K, V> implements Map<K, V> {
-    private static class Node<K, V> {
+    private static class Node<K, V> implements Map.Entry <K, V> {
         private K key;
         private V value;
 
@@ -27,8 +27,10 @@ public class AssociationList<K, V> implements Map<K, V> {
             return value;
         }
 
-        public void setValue(V value) {
+        public V setValue(V value) {
+            V old = this.value;
             this.value = value;
+            return old;
         }
     }
 
@@ -75,8 +77,11 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public Set<Entry<K, V>> entrySet() {
-        // NOTE: you do not need to implement this method!
-        throw new UnsupportedOperationException("Unimplemented method 'entrySet'");
+        Set<Entry<K, V>> ntreeSet = new TreeSet<>();
+        for (Node <K, V> element : data){
+            ntreeSet.add(element);
+        }
+        return ntreeSet;
     }
 
     /**

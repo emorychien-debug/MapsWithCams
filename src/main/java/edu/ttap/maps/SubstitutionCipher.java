@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 /**
@@ -51,10 +52,19 @@ public class SubstitutionCipher {
             return false;
         }
         boolean[] check = new boolean[26];
-        for (int i = 0; i < 26; i++) {
-            cipher.hasKey();
+        Character value;
+        for (char i = 'a'; i <= 'z'; i++) {
+            value = cipher.get(i);
+            if (value == null) { // if value is null, then the character we are checking is not in the map, return false
+                return false;
+            }
+            if (check[value-'a']){ // if check[value-a] is true, then we have already seen this character. We should only have one of each, so return false
+                return false;
+            } else { // if we have not seen this character before, mark that we have seen it in the check boolean array
+                check[value-'a'] = true;
+            }
         }
-        throw new UnsupportedOperationException("Unimplemented method 'isValidCipher'");
+        return true;
     }
 
     /**
@@ -65,8 +75,11 @@ public class SubstitutionCipher {
      * @return the inverse mapping of the given cipher
      */
     public static Map<Character, Character> invertCipher(Map<Character, Character> cipher) {
-        // TODO: implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'invertCipher'");
+        Map<Character, Character> inverse = new AssociationList<>();
+        for(Entry<Character, Character> pair : cipher.entrySet()){
+            inverse.put(pair.getValue(), pair.getKey());
+        }
+        return inverse;
     }
 
     /**
@@ -76,8 +89,11 @@ public class SubstitutionCipher {
      * @return the translated string
      */
     public static String translate(String s, Map<Character, Character> mapping) {
-        // TODO: implement me!
-        throw new UnsupportedOperationException("Unimplemented method 'translate'");
+        char[] toTranslate = s.toCharArray();
+        for(int i = 0; i < toTranslate.length; i++) {
+            toTranslate[i] = mapping.get(toTranslate[i]);
+        }
+        return new String(toTranslate);
     }
 
     /**
@@ -90,6 +106,29 @@ public class SubstitutionCipher {
                 "Usage: java SubstitutionCipher <encode|decode> <cipherfile> <filename>");
             System.exit(1);
         }
-        // TODO: finish implementing me!
+
+        Map<Character, Character> cipher;
+        switch(args[0]) {
+            case "encode":
+                cipher = createCipher(args[1]);
+                break;
+            case "decode":
+                cipher = createCipher(args[1]);
+                cipher = invertCipher(cipher);
+                break;
+            default:
+                System.err.println("Usage: java SubstitutionCipher <encode|decode> <cipherfile> <filename>");
+                System.exit(1);
+                return;
+        }
+
+        if(!isValidCipher(cipher)){
+            System.err.println("Invalid cipher");
+            System.exit(1);
+        }
+
+        Scanner text = new Scanner(args[2]);
+        System.out.println(translate(text.toString(), cipher));
+        text.close();
     }
 }

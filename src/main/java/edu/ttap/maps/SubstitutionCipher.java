@@ -28,8 +28,9 @@ public class SubstitutionCipher {
         try (Scanner cipherReader = new Scanner(cipherSource)) {
             while (cipherReader.hasNextLine()) {
                 String mapping = cipherReader.nextLine();
-                if (mapping.length() != 4){
+                if (mapping.length() != 3){//this is not always true, on windows you might get a newline
                     System.err.println ("Cannot load cipher");
+                    System.exit(1);
                 }
                 cipherMap.put (mapping.charAt(0), mapping.charAt(2));
             }
@@ -57,11 +58,10 @@ public class SubstitutionCipher {
             value = cipher.get(i);
             if (value == null) { // if value is null, then the character we are checking is not in the map, return false
                 return false;
-            }
-            if (check[value-'a']){ // if check[value-a] is true, then we have already seen this character. We should only have one of each, so return false
+            } else if (check[(int)(value - 'a')]){ // if check[value-a] is true, then we have already seen this character. We should only have one of each, so return false
                 return false;
             } else { // if we have not seen this character before, mark that we have seen it in the check boolean array
-                check[value-'a'] = true;
+                check[(int)(value - 'a')] = true;
             }
         }
         return true;
@@ -91,7 +91,10 @@ public class SubstitutionCipher {
     public static String translate(String s, Map<Character, Character> mapping) {
         char[] toTranslate = s.toCharArray();
         for(int i = 0; i < toTranslate.length; i++) {
-            toTranslate[i] = mapping.get(toTranslate[i]);
+            Character curchar = mapping.get(toTranslate[i]);
+            if(curchar != null){
+                toTranslate[i] = curchar;
+            }
         }
         return new String(toTranslate);
     }
@@ -126,8 +129,9 @@ public class SubstitutionCipher {
             System.err.println("Invalid cipher");
             System.exit(1);
         }
-
+        System.out.println("check point");
         Scanner text = new Scanner(args[2]);
+        System.out.println("check point 2");
         System.out.println(translate(text.toString(), cipher));
         text.close();
     }

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.Set;
 
 /**
  * A substitution cipher is a simple encryption scheme that associates each
@@ -76,11 +77,20 @@ public class SubstitutionCipher {
      */
     public static Map<Character, Character> invertCipher(Map<Character, Character> cipher) {
         Map<Character, Character> inverse = new AssociationList<>();
+        Set<Character> charSet = cipher.keySet();
+        for(Character i : charSet) {
+            inverse.put(cipher.get(i), i);
+        }
+        return inverse;
+
+        /*      
+        Map<Character, Character> inverse = new AssociationList<>();
         for(Entry<Character, Character> pair : cipher.entrySet()){
             inverse.put(pair.getValue(), pair.getKey());
         }
         return inverse;
-    }
+        */
+        }
 
     /**
      * Translates the given string using the provided mapping.
@@ -129,9 +139,7 @@ public class SubstitutionCipher {
             System.err.println("Invalid cipher");
             System.exit(1);
         }
-        System.out.println("check point");
         Scanner text = new Scanner(args[2]);
-        System.out.println("check point 2");
         System.out.println(translate(text.toString(), cipher));
         text.close();
     }

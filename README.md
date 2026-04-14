@@ -10,6 +10,7 @@ Authors: (_TODO: fill in your names here!_)
 
 ## Resources
 
-*   (_TODO: fill in resources here!_)
-*   ...
+*   Stack Overflow for turning stings into collection
+*   Java documentation
+*   Stack overflow for creating arrays of perameterized types
 *   ...

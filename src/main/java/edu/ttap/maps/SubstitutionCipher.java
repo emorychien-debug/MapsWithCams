@@ -139,8 +139,17 @@ public class SubstitutionCipher {
             System.err.println("Invalid cipher");
             System.exit(1);
         }
-        Scanner text = new Scanner(args[2]);
-        System.out.println(translate(text.toString(), cipher));
-        text.close();
+        try {
+            File curFile = new File(args[2]);
+            Scanner text = new Scanner(curFile);
+            while(text.hasNextLine()){
+                System.out.println(translate(text.nextLine(), cipher));
+            }
+            text.close();
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found, please try again");
+            System.exit(1);
+        }
+
     }
 }

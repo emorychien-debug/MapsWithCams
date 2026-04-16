@@ -2,6 +2,7 @@ package edu.ttap.intmap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.channels.Pipe.SourceChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -13,17 +14,17 @@ public class IntegerMaps {
      * @field letterMap which is an array of array lists that contain pairs
      * @field size is the total amount of pairs in letterMap
      */
-    private class LetterCounter {
+    private static class LetterCounter {
         private class Pair {
             private char key;
             private int value;
 
-            public Pair (char key){
+            public Pair(char key) {
                 this.key = key;
-                value = 0;
+                value = 1;
             }
 
-            public Pair (char key, int value){
+            public Pair(char key, int value) {
                 this.key = key;
                 this.value = value;
             }
@@ -40,27 +41,28 @@ public class IntegerMaps {
                 return this.key == key;
             }
 
-            public int increment(){
+            public int increment() {
                 return ++value;
             }
         }
-        
+
         private ArrayList<Pair>[] letterMap;
         private int size;
 
-        
         /**
          * initalizes LetterCounter
          */
         @SuppressWarnings("unchecked")
         public LetterCounter() {
-            // cannot create an array of a perameterized type, instead create an array of an unparameterized type and cast it
+            // cannot create an array of a perameterized type, instead create an array of an
+            // unparameterized type and cast it
             letterMap = (ArrayList<Pair>[]) new ArrayList[10];
             size = 0;
         }
 
         /**
          * see return
+         * 
          * @param key the value that we look for in the map
          * @return returns true if a pair in map contains the given key
          */
@@ -74,14 +76,38 @@ public class IntegerMaps {
             return false;
         }
 
+        @SuppressWarnings("unchecked")
+        private void expandArray() {
+            if ((((float) size) / letterMap.length) > 0.75) {
+                ArrayList<Pair>[] x2size = (ArrayList<Pair>[]) new ArrayList[letterMap.length * 2];
+                for (ArrayList<Pair> i : letterMap) {
+                    if(i != null) {
+                        for (Pair j : i) {
+                            int index = j.getKey() % x2size.length;
+                            if(x2size[index] == null) {
+                                x2size[index] = new ArrayList<Pair>();
+                            }
+                            x2size[index].add(j);
+                        }
+                    }
+                }
+                letterMap = x2size;
+            }
+        }
+
         /**
-         * If key is present in letterMap replaces existing pair otherwise adds pair to map
+         * If key is present in letterMap replaces existing pair otherwise adds pair to
+         * map
+         * 
          * @param ch the charater key we look for in the map
-         * @param v the value attached to the key
+         * @param v  the value attached to the key
          */
         public void put(char ch, int v) {
             int index = ch % letterMap.length;
             Pair newPair = new Pair(ch, v);
+            if(letterMap[index] == null) {
+                letterMap[index] = new ArrayList<>();
+            }
             ArrayList<Pair> curList = letterMap[index];
             for (int i = 0; i < curList.size(); i++) {
                 if (curList.get(i).hasKey(ch)) {
@@ -91,12 +117,14 @@ public class IntegerMaps {
             }
             curList.add(newPair);
             size++;
+            expandArray();
         }
 
         /**
          * 
          * @param ch the key we search for in map
-         * @return the value associated with given ch key, if key does not exist, throws error
+         * @return the value associated with given ch key, if key does not exist, throws
+         *         error
          */
         public int get(char ch) {
             int index = ch % letterMap.length;
@@ -107,27 +135,50 @@ public class IntegerMaps {
             }
             throw new IllegalArgumentException();
         }
-        
+
         /**
-         * Increments the value at a given key. If the key is not in the map, return false.
+         * Increments the value at a given key. If the key is not in the map, return
+         * false.
+         * 
          * @param key key we search for in map
          * @return true if was able to increment value
          */
-        public boolean increment(char key) {
+        public void increment(char key) {
             int index = key % letterMap.length;
+            if(letterMap[index] == null) {
+                letterMap[index] = new ArrayList<>();
+            }
             ArrayList<Pair> curList = letterMap[index];
             for (int i = 0; i < curList.size(); i++) {
-                if(curList.get(i).hasKey(key)) {
+                if (curList.get(i).hasKey(key)) {
                     curList.get(i).increment();
-                    return true;
+                    return;
                 }
-            } 
-            return false;
+            }
+            letterMap[index].add(new Pair(key));
+            size++;
+            System.err.println("check 1.1: before expand array");
+            expandArray();
+            System.err.println("check 1.2: after expand array");
+        }
+
+        public Set keySet() {
+            Set<Character> setofkeys = new TreeSet<>();
+            for(ArrayList<Pair> i : letterMap) {
+                if(i != null) {
+                    for (Pair j : i) {
+                        setofkeys.add(j.getKey());
+                    }
+                }
+            }
+            return setofkeys;
         }
 
     }
+
     /**
      * Creates a scanner given a file name, or exits with an error message
+     * 
      * @param path the given file to be read
      * @return A scanner that can read from the given file
      */
@@ -136,41 +187,47 @@ public class IntegerMaps {
             File curFile = new File(path);
             Scanner text = new Scanner(curFile);
             return text;
-        } catch(FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println("File Not Found, please try again");
             System.exit(1);
         }
-       return null;
+        return null;
     }
 
     /**
      * Returns the amount of each letter in the given string
+     * 
      * @param s a string whose letters will be counted
      * @return an array containing the amount of each character in the string
      */
-    private static void reportCountsH(String s, int[] counts) {
+    private static void reportCountsH(String s, LetterCounter counts) {
         char[] sArray = s.toCharArray();
         for (char i : sArray) {
-            int check = Character.toLowerCase(i) - 'a';
-            if (check < 26 && check >= 0){
-                counts[check]++;
-            }
+            counts.increment(i);
         }
     }
+
     /**
-     * Counts the quantity of the 26 alphabetical letters (case insensitive) in a given file. Then prints the results to stdout
+     * Counts the quantity of the 26 alphabetical letters (case insensitive) in a
+     * given file. Then prints the results to stdout
+     * 
      * @param path the file to be read from
      */
     public static void reportCounts(String path) {
         Scanner text = makeScanner(path);
-        int[] count = new int[26];
-        while (text.hasNextLine()){
-            reportCountsH(text.nextLine(), count);
+        LetterCounter recipt = new LetterCounter();
+        System.err.println("check 1: after new letter counter");
+        while (text.hasNextLine()) {
+            reportCountsH(text.nextLine(), recipt);
         }
-            text.close();
-        for (int i = 0; i < 26; i++) {
-            System.out.println((char)('a' + i) + ": " + count[i]);
+        System.err.println("check 2: after report countsH");
+        text.close();
+
+        Set<Character> ofKeys = recipt.keySet();
+        for(char i : ofKeys) {
+            System.out.println(i  + ": " + recipt.get(i));
         }
+
     }
 
     /**
@@ -180,7 +237,7 @@ public class IntegerMaps {
     public static int countChars(String path) {
         Scanner text = makeScanner(path);
         Set<Character> chars = new TreeSet<>();
-        while (text.hasNext()){
+        while (text.hasNext()) {
             for (char i : text.next().toCharArray()) {
                 chars.add(i);
             }
@@ -188,12 +245,12 @@ public class IntegerMaps {
         return chars.size();
     }
 
-    public static void main(String args[]){
-        if(args.length != 1) {
+    public static void main(String args[]) {
+        if (args.length != 1) {
             System.err.println("Usage: java IntegerMaps <String path>");
             System.exit(1);
         }
-
+        System.err.println("check 0: before report counts");
         reportCounts(args[0]);
         System.out.println("Number of unique characters in " + args[0] + ": " + countChars(args[0]));
     }

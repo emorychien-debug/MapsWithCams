@@ -86,7 +86,7 @@ public class LootGenerator {
             currentToken = line.next();
         }
         for(int i = 0; i < 3; i++) {
-            String
+            String curr
         }
     }
 

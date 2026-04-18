@@ -51,13 +51,44 @@ public class LootGenerator {
         }
 
     }
+
     
     /** The path to the dataset (either the small or large set). */
     private static final String DATA_SET = "data/small";
 
     List<monster> allMonsters = new ArrayList<>();
     HashMap<String, armorStats> allArmor = new HashMap<>();
+    HashMap<String, ArrayList<String>> allTCs = new HashMap<>();
+    
+    private static boolean startsTC(String word) {
+        switch(word) {
+            case "Act":
+            case "Quill":
+            case "Diablo":
+            case "Swarm":
+            case "Trapped":
+                return true;
+            default:
+                if(word.length() >= 5 && word.substring(0,4).equals("armo")) {
+                    return true;
+                } else {
+                    return false;
+                }
+        }
+    }
 
+    private static void parseTCLine(Scanner line) {
+        String startingTC = line.next();
+        String currentToken = line.next();
+        ArrayList<String> subTCs = new ArrayList<>();
+        while(!startsTC(currentToken)) {
+            startingTC += currentToken;
+            currentToken = line.next();
+        }
+        for(int i = 0; i < 3; i++) {
+            String
+        }
+    }
 
     private void fillMonList() {
         Scanner monsterFile = new Scanner(DATA_SET + "/monstats.txt");

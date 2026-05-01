@@ -3,6 +3,7 @@ package edu.ttap;
 import edu.ttap.intmap.IntegerMaps;
 //import edu.ttap.maps.SubstitutionCipher;
 import edu.ttap.lootgenerator.LootGenerator;
+import edu.ttap.maps.SubstitutionCipher;
 
 /**
  * The driver for our lab on lists.
@@ -13,6 +14,6 @@ public class Main {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-            LootGenerator.main(args);
+            SubstitutionCipher.main(args);
     }
 }

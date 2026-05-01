@@ -2,9 +2,7 @@ package edu.ttap.maps;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -82,14 +80,6 @@ public class SubstitutionCipher {
             inverse.put(cipher.get(i), i);
         }
         return inverse;
-
-        /*      
-        Map<Character, Character> inverse = new AssociationList<>();
-        for(Entry<Character, Character> pair : cipher.entrySet()){
-            inverse.put(pair.getValue(), pair.getKey());
-        }
-        return inverse;
-        */
         }
 
     /**

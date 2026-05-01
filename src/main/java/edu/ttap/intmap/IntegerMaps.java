@@ -2,9 +2,7 @@ package edu.ttap.intmap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.channels.Pipe.SourceChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,28 +17,48 @@ public class IntegerMaps {
             private char key;
             private int value;
 
+            /**
+             * creates a pair object with value one
+             * @param key the character key associated with the value
+             */
             public Pair(char key) {
                 this.key = key;
                 value = 1;
             }
-
+            /**
+             * creates a pair object with given key and value
+             * @param key the character key associated with the value
+             * @param value an integer value
+             */
             public Pair(char key, int value) {
                 this.key = key;
                 this.value = value;
             }
-
+            /**
+             * @return character key from pair
+             */
             public char getKey() {
                 return key;
             }
 
+            /**
+             * @return integer value from pair 
+             */
             public int getValue() {
                 return value;
             }
 
+            /**
+             * @param key character that could be the key 
+             * @return boolean, true if character is the key
+             */
             public boolean hasKey(char key) {
                 return this.key == key;
             }
-
+            
+            /**
+             * @return incremented value
+             */
             public int increment() {
                 return ++value;
             }
@@ -76,6 +94,11 @@ public class IntegerMaps {
             return false;
         }
 
+        /**
+         * This private function is called whenever a new element is added to the map.
+         * If the load function of the map exceeds arbitrary 0.75 threshold, 
+         * then the backing array is expanded, and elements are recategorized
+         */
         @SuppressWarnings("unchecked")
         private void expandArray() {
             if ((((float) size) / letterMap.length) > 0.75) {
@@ -162,7 +185,10 @@ public class IntegerMaps {
             System.err.println("check 1.2: after expand array");
         }
 
-        public Set keySet() {
+        /**
+         * @return set of all keys in this map
+         */
+        public Set<Character> keySet() {
             Set<Character> setofkeys = new TreeSet<>();
             for(ArrayList<Pair> i : letterMap) {
                 if(i != null) {
@@ -245,6 +271,11 @@ public class IntegerMaps {
         return chars.size();
     }
 
+
+    /**
+     * The main driver for the IntegerMaps program.
+     * @param args the driver's command-line arguments
+     */
     public static void main(String args[]) {
         if (args.length != 1) {
             System.err.println("Usage: java IntegerMaps <String path>");

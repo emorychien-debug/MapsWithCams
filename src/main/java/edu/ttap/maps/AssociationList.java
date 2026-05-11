@@ -10,8 +10,9 @@ import java.util.TreeSet;
  * An association list is an implementation of a map via a list of key-value pairs.
  */
 public class AssociationList<K, V> implements Map<K, V> {
-    private static class Node<K, V> implements Map.Entry <K, V> {
+    private static class Node<K, V> implements Map.Entry<K, V> {
         private K key;
+        
         private V value;
 
         public Node(K key, V value) {
@@ -19,11 +20,11 @@ public class AssociationList<K, V> implements Map<K, V> {
             this.value = value;
         }
 
-        public K getKey(){
+        public K getKey() {
             return key;
         }
 
-        public V getValue(){
+        public V getValue() {
             return value;
         }
 
@@ -78,7 +79,7 @@ public class AssociationList<K, V> implements Map<K, V> {
     @Override
     public Set<Entry<K, V>> entrySet() {
         Set<Entry<K, V>> ntreeSet = new TreeSet<>();
-        for (Node <K, V> element : data){
+        for (Node<K, V> element : data) {
             ntreeSet.add(element);
         }
         return ntreeSet;
@@ -113,7 +114,7 @@ public class AssociationList<K, V> implements Map<K, V> {
     @Override
     public Set<K> keySet() {
         Set<K> keys = new TreeSet<>();
-        for(Node <K, V> i : data) {
+        for (Node<K, V> i : data) {
             keys.add(i.getKey());
         }
         return keys;
@@ -129,14 +130,14 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public V put(K key, V value) {
-        for(int i = 0; i < data.size(); i++) {
-            if(data.get(i).getKey().equals(key)){
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).getKey().equals(key)) {
                 V old = data.get(i).getValue();
                 data.get(i).setValue(value);
                 return old;
             }
         }
-        data.add(new Node <K, V> (key, value));
+        data.add(new Node<K, V>(key, value));
         return null;
     }
 
@@ -162,8 +163,8 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public V remove(Object key) {
-        for(int i = 0; i < data.size(); i++) {
-            if(data.get(i).getKey().equals(key)){
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).getKey().equals(key)) {
                 V old = data.get(i).getValue();
                 data.remove(i);
                 return old;
@@ -185,10 +186,10 @@ public class AssociationList<K, V> implements Map<K, V> {
      */
     @Override
     public Collection<V> values() {
-        Collection <V> list = new ArrayList <> ();
-        for (Node <K, V> i : data){
+        Collection<V> list = new ArrayList<>();
+        for (Node<K, V> i : data) {
             list.add(i.getValue());
         }
         return list;
-        }
+    }
 }

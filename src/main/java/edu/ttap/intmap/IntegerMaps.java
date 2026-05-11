@@ -7,6 +7,9 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Class for integer maps
+ */
 public class IntegerMaps {
     /**
      * @field letterMap which is an array of array lists that contain pairs
@@ -15,6 +18,7 @@ public class IntegerMaps {
     private static class LetterCounter {
         private class Pair {
             private char key;
+            
             private int value;
 
             /**
@@ -25,6 +29,7 @@ public class IntegerMaps {
                 this.key = key;
                 value = 1;
             }
+
             /**
              * creates a pair object with given key and value
              * @param key the character key associated with the value
@@ -34,9 +39,11 @@ public class IntegerMaps {
                 this.key = key;
                 this.value = value;
             }
+
             /**
              * @return character key from pair
              */
+
             public char getKey() {
                 return key;
             }
@@ -65,6 +72,7 @@ public class IntegerMaps {
         }
 
         private ArrayList<Pair>[] letterMap;
+
         private int size;
 
         /**
@@ -104,10 +112,10 @@ public class IntegerMaps {
             if ((((float) size) / letterMap.length) > 0.75) {
                 ArrayList<Pair>[] x2size = (ArrayList<Pair>[]) new ArrayList[letterMap.length * 2];
                 for (ArrayList<Pair> i : letterMap) {
-                    if(i != null) {
+                    if (i != null) {
                         for (Pair j : i) {
                             int index = j.getKey() % x2size.length;
-                            if(x2size[index] == null) {
+                            if (x2size[index] == null) {
                                 x2size[index] = new ArrayList<Pair>();
                             }
                             x2size[index].add(j);
@@ -128,7 +136,7 @@ public class IntegerMaps {
         public void put(char ch, int v) {
             int index = ch % letterMap.length;
             Pair newPair = new Pair(ch, v);
-            if(letterMap[index] == null) {
+            if (letterMap[index] == null) {
                 letterMap[index] = new ArrayList<>();
             }
             ArrayList<Pair> curList = letterMap[index];
@@ -144,7 +152,6 @@ public class IntegerMaps {
         }
 
         /**
-         * 
          * @param ch the key we search for in map
          * @return the value associated with given ch key, if key does not exist, throws
          *         error
@@ -164,11 +171,10 @@ public class IntegerMaps {
          * false.
          * 
          * @param key key we search for in map
-         * @return true if was able to increment value
          */
         public void increment(char key) {
             int index = key % letterMap.length;
-            if(letterMap[index] == null) {
+            if (letterMap[index] == null) {
                 letterMap[index] = new ArrayList<>();
             }
             ArrayList<Pair> curList = letterMap[index];
@@ -190,8 +196,8 @@ public class IntegerMaps {
          */
         public Set<Character> keySet() {
             Set<Character> setofkeys = new TreeSet<>();
-            for(ArrayList<Pair> i : letterMap) {
-                if(i != null) {
+            for (ArrayList<Pair> i : letterMap) {
+                if (i != null) {
                     for (Pair j : i) {
                         setofkeys.add(j.getKey());
                     }
@@ -224,7 +230,8 @@ public class IntegerMaps {
      * Returns the amount of each letter in the given string
      * 
      * @param s a string whose letters will be counted
-     * @return an array containing the amount of each character in the string
+     * @param counts is an instance of the LetterCounter class, 
+     *               which acts as a map that counts letters
      */
     private static void reportCountsH(String s, LetterCounter counts) {
         char[] sArray = s.toCharArray();
@@ -250,8 +257,8 @@ public class IntegerMaps {
         text.close();
 
         Set<Character> ofKeys = recipt.keySet();
-        for(char i : ofKeys) {
-            System.out.println(i  + ": " + recipt.get(i));
+        for (char i : ofKeys) {
+            System.out.println(i + ": " + recipt.get(i));
         }
 
     }
@@ -283,6 +290,9 @@ public class IntegerMaps {
         }
         System.err.println("check 0: before report counts");
         reportCounts(args[0]);
-        System.out.println("Number of unique characters in " + args[0] + ": " + countChars(args[0]));
+        System.out.println("Number of unique characters in " 
+                            + args[0] 
+                            + ": " 
+                            + countChars(args[0]));
     }
 }

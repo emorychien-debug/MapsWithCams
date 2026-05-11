@@ -8,6 +8,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import edu.ttap.lootgenerator.affix.Affix;
+import edu.ttap.lootgenerator.affix.Prefix;
+import edu.ttap.lootgenerator.affix.Suffix;
+
+/**
+ * Main class for the loot generator program. Contains useful methods and fields for killing
+ * Diablo monsters, and printing the results to the terminal. 
+ */
 public class LootGenerator {
     /* list of things to fix:
      *   have error with useful messages instead of indexoutofbounds exceptions for TC processing
@@ -15,99 +23,30 @@ public class LootGenerator {
      *   have useful error messages for monster processing
      */
 
-    private class monster {
-        private String monClass;
-        private String monType;
-        private int monLevel;
-        private String monTC;
-
-        /**
-         * constructs random monster object from monstats file in given directory
-         * @param DATA_SET string representation of directory
-         */
-        public monster (String ourMonster) {
-            String[] tokens = ourMonster.split("\t");
-            monClass = tokens[0];
-            monType = tokens[1];
-            monLevel = Integer.parseInt(tokens[2]);
-            monTC = tokens[3];
-        }
-
-        public String getName() {return monClass;}
-
-        public String getTC() {return monTC;}
-    }
-
-    private class armorStats {
-        private int min;
-        private int max;
-
-        public armorStats(int min, int max) {
-            this.min = min;
-            this.max = max;
-        }
-
-        public int getMin() {return min;}
-        public int getMax() {return max;}
-    }
-
-    private class affix {
-        private String name;
-        private String effect;
-        private int maxEffect;
-        private int minEffect;
-
-        public affix(String affixLine) {
-            String[] info = affixLine.split("\t");
-            if(info.length != 4) {
-                System.err.println("Affix file has incorrect formatting. All fields must be separated by a tab, stupid");
-                System.err.println("Number of fields detected: " + info.length);
-                System.exit(1);
-            }
-            name = info[0];
-            effect = info[1];
-            maxEffect = Integer.parseInt(info[3]);
-            minEffect = Integer.parseInt(info[2]);
-        }
-
-        public String getName() {return name;}
-        public String getEffect() {return effect;} 
-        public int getMin() {return minEffect;}
-        public int getMax() {return maxEffect;}
-    }
-
-    private class prefix extends affix {
-        public prefix(String prefixLine) {
-            super(prefixLine);
-        }
-    }
-
-    private class suffix extends affix{
-        public suffix(String suffixLine) {
-            super(suffixLine);
-        }
-    }
-
     
     /** The path to the dataset (either the small or large set). */
     private static final String DATA_SET = "data/large";
 
-    List<monster> allMonsters = new ArrayList<>();
-    HashMap<String, armorStats> allArmor = new HashMap<>();
+    List<Monster> allMonsters = new ArrayList<>();
+
+    HashMap<String, ArmorStats> allArmor = new HashMap<>();
+
     HashMap<String, ArrayList<String>> allTCs = new HashMap<>();
-    List<prefix> allPrefixes = new ArrayList<>();
-    List<suffix> allSuffixes = new ArrayList<>();
+
+    List<Prefix> allPrefixes = new ArrayList<>();
+
+    List<Suffix> allSuffixes = new ArrayList<>();
     
     
     /**
-     * determines if a token is the start of a treasure class or if it is not
-     * @param word the token to be checked to see if it is the start of another treasure class
-     * @return 0 if the token is not the start of another treasure class. 
-     *         1 if the token is the start of a treasure class containing only other treasure classes.
-     *         2 if the token is the start of a treasure class containing only items
+     * determines if a token is the start of a TC or if it is not
+     * @param word the token to be checked to see if it is the start of another TC
+     * @return 0 if the token is not the start of another TC. 
+     *         1 if the token is the start of a TC containing only other TCs.
+     *         2 if the token is the start of a TC containing only items
      */
     private static int startsTC(String word) {
-        switch(word) {
+        switch (word) {
             case "Act":
             case "Quill":
             case "Diablo":
@@ -115,8 +54,10 @@ public class LootGenerator {
             case "Trapped":
                 return 1;
             default:
-                if(word.length() >= 5 && word.substring(0,4).equals("armo")) {
-                    return 2; //Return true if it starts with armo, useful for determining if the TC contains TCs or items
+                if (word.length() >= 5 && word.substring(0, 4).equals("armo")) {
+                    //Return true if it starts with armo, useful for determining if the 
+                    //TC contains TCs or items
+                    return 2; 
                 } else {
                     return 0;
                 }
@@ -126,18 +67,19 @@ public class LootGenerator {
     /**
      * creates a list of treasure classes to be stored in a hash map
      * @param tokens a series of strings to be interpreted as treasure classes
-     * @param curIndex since not all tokens belong to treasure classes that should be stored in this list, 
-     *                 curIndex indeicates the correct starting location to begin examining strings
+     * @param curIndex since not all tokens belong to treasure classes that should be stored in
+     *                 this list, curIndex indeicates the correct starting location to begin 
+     *                 examining strings
      * @return a list of treasure classes represented as larger strings 
      */
     private ArrayList<String> makeTClist(String[] tokens, int curIndex) {
         ArrayList<String> subTCs = new ArrayList<>();
-        for(int i = 0; i < 3; i++) {
-            String TCbuilding = tokens[curIndex++];
-            while(startsTC(tokens[curIndex]) == 0) {
-                TCbuilding += " " + tokens[curIndex++];
+        for (int i = 0; i < 3; i++) {
+            String treasureClassBuilding = tokens[curIndex++];
+            while (startsTC(tokens[curIndex]) == 0) {
+                treasureClassBuilding += " " + tokens[curIndex++];
             }
-            subTCs.add(TCbuilding);
+            subTCs.add(treasureClassBuilding);
         }
         return subTCs;
     }
@@ -148,7 +90,7 @@ public class LootGenerator {
      * @return if this item has been flagged by the programmer as problematic
      */
     private boolean isProblematicItem(String itemName) {
-        switch(itemName) {
+        switch (itemName) {
             case "Wyrmhide":
             case "Boneweave":
             case "Crown":
@@ -162,59 +104,44 @@ public class LootGenerator {
      * Function specific to parsing TCs.
      * Interprets a series of tokens as armor items to be stored in the allTCs hash map.
      * @param tokens a series of strings which will be interpreted as items
-     * @param curIndex Since not all indicies contain item-related tokens (as compared to key-related tokens), 
+     * @param curIndex Since not all indicies contain item-related tokens 
+     *                 (as compared to key-related tokens), 
      *                 this is an index for the starting point of the useful tokens
-     * @return
+     * @return a list containing all kinds of armor. 
      */
     private ArrayList<String> makeArmorList(String[] tokens, int curIndex) {
         ArrayList<String> items = new ArrayList<>();
         String item = tokens[curIndex];
-        for(int i = 0; i < 3; i++) {
-            while(!allArmor.containsKey(item)) {
+        for (int i = 0; i < 3; i++) {
+            while (!allArmor.containsKey(item)) {
                 item += " " + tokens[curIndex++];
             }
-            if(isProblematicItem(item) && (tokens[curIndex].equals("Shield") || tokens[curIndex].equals("Boots"))) {
+            if (isProblematicItem(item) 
+                && (tokens[curIndex].equals("Shield") 
+                    || tokens[curIndex].equals("Boots"))) {
                 item += tokens[curIndex++];
             }
             items.add(item);
         }
         return items;
     }
+
     /**
      * Adds TC in given line to the allTCs hash map.
      * must have a made the armor map before calling this function.
      * all armor in all TCs parsed by this function must be in the armor map.
      * ALL ARMOR MUST BE SPELLED THE SAME (CASE SENSITIVE)
-     * @param line A string containing a complete treasure class (probably from a "TreasureClassEx.txt" file)
+     * @param line A string containing a complete treasure class 
+     *             (probably from a "TreasureClassEx.txt" file)
      */
-    /*
     private void parseTCLine(String line) {
-        // identify the key
-        String[] tokens = line.split(" ");
-        String keyTC = tokens[0];
-        int curIndex = 1;
-        while(startsTC(tokens[curIndex]) == 0) {
-            keyTC += " " + tokens[curIndex++]; // incrment curIndex after we pull a new character
-        }
-        // create an ArrayList of TCs
-        if(startsTC(tokens[0]) == 1) {
-            allTCs.put(keyTC, makeTClist(tokens, curIndex));  
-        } else if(startsTC(tokens[0]) == 2) {
-            allTCs.put(keyTC, makeArmorList(tokens, curIndex));
-        } else {
-            System.err.println("Inproper treasure class file formatting");
-            System.exit(1);
-        }
-    }
-    */
-   private void parseTCLine(String line) {
         String[] tokens = line.split("\t");
         ArrayList<String> subTCs = new ArrayList<>();
-        for(int i = 1; i < tokens.length; i++) {
+        for (int i = 1; i < tokens.length; i++) {
             subTCs.add(tokens[i]);
         }
-        allTCs.put(tokens[0],subTCs);
-   }
+        allTCs.put(tokens[0], subTCs);
+    }
 
     /**
      * adds an entire file's worth of TCs into the allTCs hash map. 
@@ -223,13 +150,13 @@ public class LootGenerator {
      * ALL ARMOR MUST BE SPELLED THE SAME (CASE SENSITIVE)
      */
     private void parseTCs() {
-        File TCfile = new File(DATA_SET + "/TreasureClassEx.txt");
+        File treasureClassFile = new File(DATA_SET + "/TreasureClassEx.txt");
         try {
-            Scanner TCscanner = new Scanner(TCfile);
-            while(TCscanner.hasNextLine()) {
-                parseTCLine(TCscanner.nextLine());
+            Scanner treasureClassScanner = new Scanner(treasureClassFile);
+            while (treasureClassScanner.hasNextLine()) {
+                parseTCLine(treasureClassScanner.nextLine());
             }
-            TCscanner.close();
+            treasureClassScanner.close();
         } catch (FileNotFoundException e) {
             System.err.println("Cannot find treasure class file, stupid");
             System.exit(1);
@@ -246,8 +173,8 @@ public class LootGenerator {
         File monsterFile = new File(DATA_SET + "/monstats.txt");
         try {
             Scanner monsterScanner = new Scanner(monsterFile);
-            while(monsterScanner.hasNextLine()) {
-                allMonsters.add(new monster(monsterScanner.nextLine()));
+            while (monsterScanner.hasNextLine()) {
+                allMonsters.add(new Monster(monsterScanner.nextLine()));
             }
             monsterScanner.close();
         } catch (FileNotFoundException e) {
@@ -285,17 +212,19 @@ public class LootGenerator {
         File armorFile = new File(DATA_SET + "/armor.txt");
         try {
             Scanner armorScanner = new Scanner(armorFile);
-            while(armorScanner.hasNextLine()) {
+            while (armorScanner.hasNextLine()) {
                 String[] tokens = armorScanner.nextLine().split("\t");
-                if(tokens.length != 3) {
+                if (tokens.length != 3) {
                     System.err.println("Contents of one line of armor file formatted incorrectly:");
-                    for(String s : tokens) {
+                    for (String s : tokens) {
                         System.err.println(s);
                     }
                     System.err.println("Incorrect formatting in armor file, stupid");
                     System.exit(1);
                 }
-                allArmor.put(tokens[0], new armorStats(Integer.parseInt(tokens[1]), Integer.parseInt(tokens[2])));
+                allArmor.put(tokens[0], 
+                            new ArmorStats(Integer.parseInt(tokens[1]), 
+                            Integer.parseInt(tokens[2])));
             }
             armorScanner.close();
         } catch (FileNotFoundException e) {
@@ -311,8 +240,8 @@ public class LootGenerator {
         File suffixFile = new File(DATA_SET + "/MagicSuffix.txt");
         try {
             Scanner text = new Scanner(suffixFile);
-            while(text.hasNextLine()) {
-                allSuffixes.add(new suffix(text.nextLine()));
+            while (text.hasNextLine()) {
+                allSuffixes.add(new Suffix(text.nextLine()));
             }
             text.close();
         } catch (FileNotFoundException e) {
@@ -322,64 +251,78 @@ public class LootGenerator {
     }
 
     /**
-     * fills the list allFrefixes with prefix objects containing their respective data
+     * fills the list allFrefixes with Prefix objects containing their respective data
      */
     private void fillPrefixList() {
         File prefixFile = new File(DATA_SET + "/MagicPrefix.txt");
         try {
             Scanner text = new Scanner(prefixFile);
-            while(text.hasNextLine()) {
-                allPrefixes.add(new prefix(text.nextLine()));
+            while (text.hasNextLine()) {
+                allPrefixes.add(new Prefix(text.nextLine()));
             }
             text.close();
         } catch (FileNotFoundException e) {
-            System.err.println("Cannot find prefix file, stupid");
+            System.err.println("Cannot find Prefix file, stupid");
             System.exit(1);
         }
     }
+
     /**
      * the allMonsters list should be initialized 
      * @return a random monster from the allMonsters list
      */
-    public monster pickRandMon() {
+    public Monster pickRandMon() {
         Random r = new Random();
         return allMonsters.get(r.nextInt(allMonsters.size()));
     }
 
-    public String generateLoot(monster mon) {
-        String TC = mon.getTC();
-        if(!allTCs.containsKey(TC)) {
-            System.err.println(TC);
+    /**
+     * @param mon an instance of the monster class that contains a non-null treasure class
+     * @return a string representation of a random item that the monster could drop (no stats)
+     */
+    public String generateLoot(Monster mon) {
+        String treasureClass = mon.getTC();
+        if (!allTCs.containsKey(treasureClass)) {
+            System.err.println(treasureClass);
             System.err.println(allTCs.keySet());
             System.err.println("You incorrectly parsed your monster, stupid");
             System.exit(1);
         }
-        while(allTCs.containsKey(TC)) {
+        while (allTCs.containsKey(treasureClass)) {
             Random r = new Random();
-            TC = allTCs.get(TC).get(r.nextInt(3));
+            treasureClass = allTCs.get(treasureClass).get(r.nextInt(3));
         }
-        if(!allArmor.containsKey(TC)) {
-            System.err.println("You incorrectly parsed your armor, stupid (either in allTCs or in all Armor)");
+        if (!allArmor.containsKey(treasureClass)) {
+            System.err.println("You incorrectly parsed your armor, stupid" 
+                                + "(either in allTCs or in all Armor)");
             System.exit(1);
         }
-        return TC;
+        return treasureClass;
     }
 
+    /**
+     * @param armor a string representation of a kind of armor in diablo
+     * @return a randomized defense value for that specific armor
+     */
     public int getArmorDefense(String armor) {
-        armorStats range = allArmor.get(armor);
+        ArmorStats range = allArmor.get(armor);
         Random r = new Random();
         return r.nextInt(range.getMax() + 1 - range.getMin()) + range.getMin();
     }
 
-    public affix[] generateAffixes() {
-        affix[] affixes = new affix[2];
+    /**
+     * @return a randomly generated array of affixes. May contian the null pointer. 
+     *         In this case, there is no prefix/suffix.
+     */
+    public Affix[] generateAffixes() {
+        Affix[] affixes = new Affix[2];
         Random b = new Random();
-        if(b.nextBoolean()) {
+        if (b.nextBoolean()) {
             affixes[0] = allPrefixes.get(b.nextInt(allPrefixes.size()));
         } else {
             affixes[0] = null;
         }
-        if(b.nextBoolean()) {
+        if (b.nextBoolean()) {
             affixes[1] = allSuffixes.get(b.nextInt(allSuffixes.size()));
         } else {
             affixes[1] = null;
@@ -395,49 +338,59 @@ public class LootGenerator {
         fillSuffixList();
     }
 
+    /**
+     * Simulates killing one monster(peter micheal osera)(lowercase on purpose)
+     * Then prints results to the terminal
+     */
     public void killMonster() {
         Random r = new Random();
-        monster PeterMichealOsera = allMonsters.get(r.nextInt(allMonsters.size())); 
-        System.out.println("Fighting " + PeterMichealOsera.getName() + " ...");
-        System.out.println("You have slain " + PeterMichealOsera.getName() + "!");
-        System.out.println(PeterMichealOsera.getName() + " dropped:");
+        Monster peterMichealOsera = allMonsters.get(r.nextInt(allMonsters.size())); 
+        System.out.println("Fighting " + peterMichealOsera.getName() + " ...");
+        System.out.println("You have slain " + peterMichealOsera.getName() + "!");
+        System.out.println(peterMichealOsera.getName() + " dropped:");
         System.out.println();
-        String lootItem = generateLoot(PeterMichealOsera);
-        affix[] fixPeterMichealOsera = generateAffixes();
+        String lootItem = generateLoot(peterMichealOsera);
+        Affix[] fixPeterMichealOsera = generateAffixes();
         String[] affixNames = new String[2];
-        for(int i = 0; i < 2; i++) {
-            if(fixPeterMichealOsera[i] == null) {
+        for (int i = 0; i < 2; i++) {
+            if (fixPeterMichealOsera[i] == null) {
                 affixNames[i] = "";
-            }
-            else {
+            } else {
                 affixNames[i] = fixPeterMichealOsera[i].getName() + " ";
-            }notify();
+            }
         }
         System.out.println(affixNames[0] + lootItem + " " + affixNames[1]);
         System.out.println("Defense: " + getArmorDefense(lootItem));
-        for(int i = 0; i < 2; i++) {
-            if(!(fixPeterMichealOsera[i] == null)) {
-                int specialValue = r.nextInt(fixPeterMichealOsera[i].getMax() + 1 - fixPeterMichealOsera[i].getMin()) + fixPeterMichealOsera[i].getMin();
+        for (int i = 0; i < 2; i++) {
+            if (!(fixPeterMichealOsera[i] == null)) {
+                int specialValue = r.nextInt(fixPeterMichealOsera[i].getMax() 
+                                            + 1 
+                                            - fixPeterMichealOsera[i].getMin()) 
+                                    + fixPeterMichealOsera[i].getMin();
                 System.out.println(specialValue + " " + fixPeterMichealOsera[i].getEffect());
             }
         }
     }
     
+    /**
+     * The main driver for the loot generator class
+     * @param args used for nothing
+     */
     public static void main(String[] args) {
-        LootGenerator PMSthings = new LootGenerator();
-        PMSthings.initializeFields();
+        LootGenerator somePMSthings = new LootGenerator();
+        somePMSthings.initializeFields();
         boolean continuePlay = true;
         Scanner play = new Scanner(System.in);
         while (continuePlay) {
-            PMSthings.killMonster();
+            somePMSthings.killMonster();
             boolean correctInput = false;
-            while(!correctInput) {
+            while (!correctInput) {
                 System.out.println("Continue fighting? [Y/N]");
                 String userIn = play.next().toLowerCase();
-                if(userIn.equals("no")||userIn.equals("n")) {
+                if (userIn.equals("no") || userIn.equals("n")) {
                     continuePlay = false;
                     correctInput = true;
-                } else if(userIn.equals("yes") || userIn.equals("y")) {
+                } else if (userIn.equals("yes") || userIn.equals("y")) {
                     correctInput = true;
                 }
             }

@@ -27,14 +27,15 @@ public class SubstitutionCipher {
         try (Scanner cipherReader = new Scanner(cipherSource)) {
             while (cipherReader.hasNextLine()) {
                 String mapping = cipherReader.nextLine();
-                if (mapping.length() != 3){//this is not always true, on windows you might get a newline
-                    System.err.println ("Cannot load cipher");
+                if (mapping.length() != 3) { //this is not always true, 
+                    // on windows you might get a newline
+                    System.err.println("Cannot load cipher");
                     System.exit(1);
                 }
-                cipherMap.put (mapping.charAt(0), mapping.charAt(2));
+                cipherMap.put(mapping.charAt(0), mapping.charAt(2));
             }
-        } catch (FileNotFoundException b) {
-            System.err.println ("File not found");
+        } catch (FileNotFoundException badNaming) {
+            System.err.println("File not found");
         }
         return cipherMap;
     }
@@ -55,12 +56,16 @@ public class SubstitutionCipher {
         Character value;
         for (char i = 'a'; i <= 'z'; i++) {
             value = cipher.get(i);
-            if (value == null) { // if value is null, then the character we are checking is not in the map, return false
+            if (value == null) { // if value is null, 
+                // then the character we are checking is not in the map, return false
                 return false;
-            } else if (check[(int)(value - 'a')]){ // if check[value-a] is true, then we have already seen this character. We should only have one of each, so return false
+            } else if (check[(int) (value - 'a')]) { // if check[value-a] is true, 
+                // then we have already seen this character. 
+                // We should only have one of each, so return false
                 return false;
-            } else { // if we have not seen this character before, mark that we have seen it in the check boolean array
-                check[(int)(value - 'a')] = true;
+            } else { // if we have not seen this character before, 
+                // mark that we have seen it in the check boolean array
+                check[(int) (value - 'a')] = true;
             }
         }
         return true;
@@ -76,11 +81,11 @@ public class SubstitutionCipher {
     public static Map<Character, Character> invertCipher(Map<Character, Character> cipher) {
         Map<Character, Character> inverse = new AssociationList<>();
         Set<Character> charSet = cipher.keySet();
-        for(Character i : charSet) {
+        for (Character i : charSet) {
             inverse.put(cipher.get(i), i);
         }
         return inverse;
-        }
+    }
 
     /**
      * Translates the given string using the provided mapping.
@@ -90,9 +95,9 @@ public class SubstitutionCipher {
      */
     public static String translate(String s, Map<Character, Character> mapping) {
         char[] toTranslate = s.toCharArray();
-        for(int i = 0; i < toTranslate.length; i++) {
+        for (int i = 0; i < toTranslate.length; i++) {
             Character curchar = mapping.get(toTranslate[i]);
-            if(curchar != null){
+            if (curchar != null) {
                 toTranslate[i] = curchar;
             }
         }
@@ -111,7 +116,7 @@ public class SubstitutionCipher {
         }
 
         Map<Character, Character> cipher;
-        switch(args[0]) {
+        switch (args[0]) {
             case "encode":
                 cipher = createCipher(args[1]);
                 break;
@@ -120,19 +125,20 @@ public class SubstitutionCipher {
                 cipher = invertCipher(cipher);
                 break;
             default:
-                System.err.println("Usage: java SubstitutionCipher <encode|decode> <cipherfile> <filename>");
+                System.err.println("Usage: java SubstitutionCipher"
+                                    + "<encode|decode> <cipherfile> <filename>");
                 System.exit(1);
                 return;
         }
 
-        if(!isValidCipher(cipher)){
+        if (!isValidCipher(cipher)) {
             System.err.println("Invalid cipher");
             System.exit(1);
         }
         try {
             File curFile = new File(args[2]);
             Scanner text = new Scanner(curFile);
-            while(text.hasNextLine()){
+            while (text.hasNextLine()) {
                 System.out.println(translate(text.nextLine(), cipher));
             }
             text.close();
